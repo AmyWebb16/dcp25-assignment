@@ -1,17 +1,21 @@
-# ABC Music Dashboard
+# ABC File Parser and Analysis
+
+This assignment is Category 3 for use of AI:
+
+![](images/Screenshot%20from%202025-11-03%2017-46-03.png)
   
 **Weight:** 30%
 **Submission:** GitHub repository URL + In-class demo
 
 ---
 
-## Overview
+You will build an application in Python that:
 
-You will build a complete database application that:
-1. Reads ABC music files from multiple folders (representing different books)
-2. Parses and stores tunes in a MySQL database
+1. Reads ABC files from multiple folders (representing different books)
+2. Parses and stores tunes into a list of dictionaries
+3. Stores the data in a mysql database
 3. Loads data into pandas for analysis
-4. Create a dashboard so that a user can browse the data
+4. Create a simple user interface so that a user can query the data
 5. Maintains proper version control with Git/GitHub
 
 ---
@@ -41,37 +45,17 @@ abc_books/
 
 ---
 
-## Part 1: Database Design & File Parsing (30%)
+## Part 1: File Loading & Parsing (30%)
 
-### Design Database Schema
-
-Create a MySQL database called `abc_music` with a table called `tunes`.
-
-**Required columns:**
-- `id` - INT, PRIMARY KEY, AUTO_INCREMENT
-- `book` - INT (folder number where tune was found)
-- `tune_id` - VARCHAR(20) (the X: value from ABC)
-- `title` - VARCHAR(255)
-- `alt_title` - VARCHAR(255) (nullable)
-- `tune_type` - VARCHAR(50) (reel, jig, hornpipe, etc.)
-- `key_signature` - VARCHAR(20) (G, D, Em, Ador, etc.)
-- `notation` - TEXT (the complete ABC notation)
-
-### File Discovery
-
-Write code to discover all ABC files in the folder structure.
-
-**Requirements:**
 - Recursively traverse the `abc_books/` directory
 - Identify all `.abc` files
 - Determine the book number from the parent folder name
-- Handle cases where folders might be named "0", "1", "2", etc.
 
 ### Parse and Insert Tunes
 
 For each ABC file:
-1. Parse all tunes in the file (using logic from previous lab)
-2. Insert each tune into the database with the correct book number
+1. Parse and load all tunes in the file (using logic from previous lab) into a list of dictionaries
+2. Insert each tune into a database table with the correct book number
 
 ---
 
@@ -98,7 +82,7 @@ def load_tunes_from_database():
 
 ### Create Analysis Functions
 
-Write functions to analyze the data:
+Write functions to analyze the data. Some ideas to get you started, but include any others you think might be useful. Use your imagination to consider how a user might want to query and analyse this data:
 
 ```python
 def get_tunes_by_book(df, book_number):
@@ -113,69 +97,28 @@ def search_tunes(df, search_term):
     """Search tunes by title (case insensitive)"""
     pass
 
-def get_statistics(df):
-    """Return summary statistics"""
-    stats = {
-        'total_tunes': len(df),
-        'books': df['book'].nunique(),
-        'tune_types': df['tune_type'].value_counts().to_dict(),
-        'keys': df['key_signature'].value_counts().to_dict()
-    }
-    return stats
 ```
 
 ---
 
-## Part 3: Dashboard & Interactive Elements (40%)
+## Part 3: Interactive Elements (30%)
 
-Create a "dashboard". It can be purely text based or use TKInter, Django, or Py5
+Create a way for a user to interact with the data and run queries. This can be purely menu based like this:
 
-**Suggested Layout:**
+- https://www.youtube.com/watch?v=p3Vui6q_wPw
 
-```
-+------------------------------------------+
-|  ABC Music Explorer                    X |
-+------------------------------------------+
-| Filter by Book: [Dropdown]  [Refresh]   |
-| Filter by Type: [Dropdown]  [Clear]     |
-| Search Title:   [________]  [Search]    |
-+------------------------------------------+
-|  ID | Book | Title          | Type      |
-|----|------|----------------|-----------|
-|  1 |  0   | Cooley's       | reel      |
-|  2 |  0   | The Butterfly  | slip jig  |
-|  3 |  1   | Banish...      | jig       |
-|    ...                                   |
-+------------------------------------------+
-| Selected Tune Details:                   |
-| Title: Cooley's                          |
-| Type: reel      Key: Emin                |
-| [View Notation]                          |
-+------------------------------------------+
-| Total Tunes: 1234  |  Books: 4           |
-+------------------------------------------+
-```
+Or you can use py5, tkinter or django
 
-## Part 4: Documentation & Github
+## Part 4: Documentation & Github (20%)
 
-Your repository should have this structure:
+Fork [this repo]()
 
-```
-abc-music-explorer/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── src/
-├── docs/
-│   └── screenshots/
-```
-
-Your README must be in [this format](https://github.com/skooter500/csresources/blob/main/assignmentreadme.md):
+Your README must be in [this format](README.MD):
 
 - Use docstrings for all functions and classes
 - Include type hints where appropriate
 - Add comments for complex logic
-
+- Make regular commits!!
 
 ## Grading Rubric
 
@@ -183,7 +126,7 @@ Your README must be in [this format](https://github.com/skooter500/csresources/b
 |-----------|--------|
 | Loading & parsing | 30% |
 | Data Analysys | 20% |
-| Dashboard & querying | 30% |
+| Interactive Elements | 30% |
 | Github, documentation & presentation | 20% |
 
 Overall Grade Descriptors
@@ -196,10 +139,12 @@ Overall Grade Descriptors
 
 ## Submission Requirements
 
-1. **GitHub Repository URL** via the submission link
+1. **GitHub Repository URL** via Brightspace
+2. In class demo
 
-### Optional Enhancements (Bonus)
-- Parse the tunes and generate search keys
+Optional elements:
+
+- [Parse the tunes and generate search keys](https://arrow.tudublin.ie/sciendoc/71/)
 - Add plot visualizations (matplotlib)
 - Implement edit/delete tune functionality
 - Create playlist/favorites feature

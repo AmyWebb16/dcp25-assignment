@@ -1,16 +1,10 @@
-# Project Title
+# Data Centric Programming Assignment 2025
 
-- [Assignment brief](assignment.md)
+- [Assignment Brief](assignment.md)
 
 Name:
 
 Student Number: 
-
-Class Group:
-
-# Video
-
-[![YouTube](http://img.youtube.com/vi/J2kHSSFA4NU/0.jpg)](https://www.youtube.com/watch?v=J2kHSSFA4NU)
 
 # Screenshots
 
@@ -108,5 +102,5 @@ This is a table:
 |Some stuff | Some more stuff in this column |
 |Some stuff | Some more stuff in this column |
 |Some stuff | Some more stuff in this column |
-|Some stuff | Some more stuff in this column |
 
+|Some stuff | Some more stuff in this column |
