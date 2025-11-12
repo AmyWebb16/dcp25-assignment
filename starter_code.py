@@ -3,36 +3,42 @@
 # os is a module that lets us access the file system
 
 import os 
-import sqlite3
+import mysql.connector
+from typing import list, dict, any
+import pandas as pd
+
 # sqlite for connecting to sqlite databases
+def connect_db():
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",        
+        password="",       
+        database="tunes1"   
+    )
+    return conn
 
 # An example of how to create a table, insert data
 # and run a select query
 def do_databasse_stuff():
 
-    conn = sqlite3.connect('tunes.db')
+    conn = connect_db()
     cursor = conn.cursor()
 
     # Create table
-    cursor.execute('CREATE TABLE IF NOT EXISTS users (name TEXT, age INTEGER)')
-
-    # Insert data
-    cursor.execute('INSERT INTO users (name, age) VALUES (?, ?)', ('John', 30))
-
-    # Save changes
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS tunes1 (
+        X TEXT,
+        T Text,
+        R TEXT,
+        M TEXT,
+        L TEXT,
+        Q TEXT,
+        K TEXT
+        )""")
     conn.commit()
-
-    cursor.execute('SELECT * FROM users')
-
-    # Get all results
-    results = cursor.fetchall()
-
-    # Print results
-    for row in results:
-        print(row)
-
-    # Close
+    cursor.close()
     conn.close()
+
 
 
 books_dir = "abc_books"
@@ -45,11 +51,11 @@ def process_file(file):
 
     # just print the files for now
     for line in lines:
-        # print(line)
+        # print(line)0
         pass
 
 
-# do_databasse_stuff()
+#do_databasse_stuff()
 
 # Iterate over directories in abc_books
 for item in os.listdir(books_dir):
@@ -67,3 +73,5 @@ for item in os.listdir(books_dir):
                 file_path = os.path.join(item_path, file)
                 print(f"  Found abc file: {file}")
                 process_file(file_path)
+
+
