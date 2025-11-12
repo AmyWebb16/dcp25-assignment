@@ -4,7 +4,7 @@
 
 import os 
 import mysql.connector
-from typing import list, dict, any
+from typing import List, Dict, Any
 import pandas as pd
 
 # sqlite for connecting to sqlite databases
@@ -17,8 +17,7 @@ def connect_db():
     )
     return conn
 
-# An example of how to create a table, insert data
-# and run a select query
+# An example of how to create a table
 def do_databasse_stuff():
 
     conn = connect_db()
@@ -39,9 +38,29 @@ def do_databasse_stuff():
     cursor.close()
     conn.close()
 
+def insert_data(book_number, tune):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """INSERT INTO tunes1 (book_number, X, T, R, M, L, Q, K) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+        (
+            book_number,
+            tune.get("X", ""),
+            tune.get("T", ""),
+            tune.get("R", ""),
+            tune.get("M", ""),
+            tune.get("L",""),
+            tune.get("Q",""),
+            tune.get("K","")
+        )
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
-books_dir = "abc_books"
 
 def process_file(file):
     with open(file, 'r') as f:
@@ -54,7 +73,7 @@ def process_file(file):
         # print(line)0
         pass
 
-
+#
 #do_databasse_stuff()
 
 # Iterate over directories in abc_books
