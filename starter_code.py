@@ -24,8 +24,10 @@ def do_databasse_stuff():
     cursor = conn.cursor()
 
     # Create table
+    cursor.execute("DROP TABLE IF EXISTS tunes1")
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS tunes1 (
+        book_number INT,
         X TEXT,
         T Text,
         R TEXT,
@@ -61,20 +63,37 @@ def insert_data(book_number, tune):
     conn.close()
 
 
-
-def process_file(file):
+def process_file(file,book_number):
     with open(file, 'r') as f:
         lines = f.readlines()
     # list comprehension to strip the \n's
     lines = [line.strip() for line in lines]
 
+    tunes = []
+    current_tune = {}
+
     # just print the files for now
     for line in lines:
-        # print(line)0
+        if line.startswith("X:"):
+            if current_tune:
+                tunes.append(current_tune)
+                current_tune ={}
+        if ":" in line:
+            key, value = line.split(":",1)
+            current_tune[key.strip()] = value.strip()
+    if current_tune:
+        tunes.append(current_tune)
+    
+    for tune in tunes:
+        insert_data(book_number, tune)
         pass
 
 #
-#do_databasse_stuff()
+do_databasse_stuff()
+
+books_dir = "abc_books"
+
+#insert_data()
 
 # Iterate over directories in abc_books
 for item in os.listdir(books_dir):
@@ -84,6 +103,8 @@ for item in os.listdir(books_dir):
     # Check if it's a directory and has a numeric name
     if os.path.isdir(item_path) and item.isdigit():
         print(f"Found numbered directory: {item}")
+        book_number = int(item)
+
         
         # Iterate over files in the numbered directory
         for file in os.listdir(item_path):
@@ -91,6 +112,6 @@ for item in os.listdir(books_dir):
             if file.endswith('.abc'):
                 file_path = os.path.join(item_path, file)
                 print(f"  Found abc file: {file}")
-                process_file(file_path)
+                process_file(file_path, book_number)
 
 
