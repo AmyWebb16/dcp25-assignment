@@ -7,17 +7,19 @@ import mysql.connector
 from typing import List, Dict, Any
 import pandas as pd
 
-# sqlite for connecting to sqlite databases
+# connect to mysql server
 def connect_db():
     conn = mysql.connector.connect(
         host="localhost",
         user="root",        
         password="",       
         database="tunes1"   
+        
     )
     return conn
 
-# An example of how to create a table
+
+
 def do_databasse_stuff():
 
     conn = connect_db()
@@ -44,6 +46,7 @@ def insert_data(book_number, tune):
     conn = connect_db()
     cursor = conn.cursor()
 
+    #insert data into table
     cursor.execute(
         """INSERT INTO tunes1 (book_number, X, T, R, M, L, Q, K) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
         (
@@ -72,7 +75,7 @@ def process_file(file,book_number):
     tunes = []
     current_tune = {}
 
-    # just print the files for now
+   #get files into a list 
     for line in lines:
         if line.startswith("X:"):
             if current_tune:
@@ -93,7 +96,7 @@ do_databasse_stuff()
 
 books_dir = "abc_books"
 
-#insert_data()
+
 
 # Iterate over directories in abc_books
 for item in os.listdir(books_dir):
@@ -114,4 +117,34 @@ for item in os.listdir(books_dir):
                 print(f"  Found abc file: {file}")
                 process_file(file_path, book_number)
 
+                
+def get_all_books():
+    conn = connect_db()
+    query = "SELECT * from  tunes1"
+    df = pd.read_sql(query,conn)
+    print(df.head())
 
+def get_tunes_by_book():
+    conn = connect_db()
+    query1 = "SELECT * from tunes1 where book_number = 1;"
+    df = pd.read_sql(query1,conn)
+    print(df)
+
+    pass
+
+def get_tunes_by_type(tune_type):
+    conn = connect_db()
+    query2 = "SELECT * from tunes1 where R = tune_type; "
+    df = pd.read_sql(query2,conn)
+    print(df)
+    pass
+
+def search_tunes(search_term):
+    conn = connect_db()
+    query3 = "Select * from tunes1 where T = search_term;"
+    df = pd.read_sql(query3,conn)
+    print(df)
+    pass
+
+
+get_tunes_by_book()
