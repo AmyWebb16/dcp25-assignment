@@ -180,12 +180,51 @@ def get_all_books():
     df = pd.read_sql(query,conn)
     print(df.head())
 
-def search_tune_book(search_term):
+def search_tune_book():
     conn = connect_db()
-    query3 = "Select * from tunes1 where book_number = search_term;"
-    df = pd.read_sql(query3,conn)
-    print(df)
-    
+    root, search_frame, tree = create_UI()
+
+    label = tk.Label(search_frame, text="Search by Book Number:")
+    label.pack(side="left", padx=5)
+
+    entry = tk.Entry(search_frame, width=30)
+    entry.pack(side="left", padx=5)
+
+    def on_click():
+        tree.delete(*tree.get_children())  
+        search = entry.get().strip()
+
+        if not search:
+            messagebox.showwarning("Input Required", "Please enter a book number") 
+            return
+
+        try:
+            book_numer = int(search)
+            query = "SELECT * FROM tunes1 WHERE book_number = %s;"
+            df = pd.read_sql(query, conn, params=[search])
+
+            if df.empty:
+                messagebox.showinfo("No Results", f"No records found for '{search}'")
+                return
+
+            for _, row in df.iterrows():
+                tree.insert("", tk.END, values=list(row))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Database error: {str(e)}")
+
+    button = tk.Button(search_frame, text="Search", command=on_click)
+    button.pack(side="left", padx=5)
+    entry.bind('<Return>', lambda e: on_click())
+
+    def on_closing():
+        conn.close()
+        root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.mainloop()
+
+
     pass
 
 def get_tunes_by_type():
@@ -247,6 +286,8 @@ for item in os.listdir(books_dir):
 
 
 
-get_tunes_by_title()
-graph_top10_origins()
+#get_tunes_by_title()
+#graph_top10_origins()
+#get_tune_by_type()
+search_tune_book()
 
