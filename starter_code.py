@@ -8,6 +8,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import matplotlib.pyplot as plt
 
 # connect to mysql server
 def connect_db():
@@ -35,6 +36,7 @@ def do_databasse_stuff():
         X TEXT,
         T Text,
         R TEXT,
+        O TEXT,
         M TEXT,
         L TEXT,
         Q TEXT,
@@ -50,12 +52,13 @@ def insert_data(book_number, tune):
 
     #insert data into table
     cursor.execute(
-        """INSERT INTO tunes1 (book_number, X, T, R, M, L, Q, K) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+        """INSERT INTO tunes1 (book_number, X, T, R, O,M, L, Q, K) VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s)""",
         (
             book_number,
             tune.get("X", ""),
             tune.get("T", ""),
             tune.get("R", ""),
+            tune.get("O", ""),
             tune.get("M", ""),
             tune.get("L",""),
             tune.get("Q",""),
@@ -104,7 +107,7 @@ def create_UI():
     table_frame = tk.Frame(root)
     table_frame.pack(fill="both", expand=True)
 
-    columns = ('book_number', 'X', 'T', 'R', 'M', 'L', 'Q', 'K')
+    columns = ('book_number', 'X', 'T', 'R','O', 'M', 'L', 'Q', 'K')
     tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=8)
 
     for col in columns:
@@ -127,7 +130,7 @@ def get_tunes_by_title():
     conn = connect_db()
     root, search_frame, tree =create_UI()
 
-    label = tk.Label(search_frame, text="Search T:")
+    label = tk.Label(search_frame, text="Search by Title:")
     label.pack(side="left", padx=5)
 
     entry = tk.Entry(search_frame,width=30)
@@ -143,8 +146,8 @@ def get_tunes_by_title():
             return
         
         try:
-            query1 = "SELECT * from tunes1 where T  Like %s;"
-            df = pd.read_sql(query1,conn,params=[search])
+            query1 = "SELECT * from tunes1 where T Like %s;"
+            df = pd.read_sql(query1,conn,params=[f"%{search}%"])
 
             if df.empty:
                 tk.messagebox.showinfo("No Results", f"No records found for '{search}'")
@@ -172,6 +175,7 @@ def get_tunes_by_title():
 
 def get_all_books():
     conn = connect_db()
+
     query = "SELECT * from  tunes1"
     df = pd.read_sql(query,conn)
     print(df.head())
@@ -187,9 +191,36 @@ def search_tune_book(search_term):
 def get_tunes_by_type():
     conn = connect_db()
     query2 = "SELECT * from tunes1 where R = ; "
-    df = pd.read_sql(query2,conn)
+    df = pd.read_sql(query2,conn,)
     print(df)
     pass
+
+def graph_top10_origins():
+    conn = connect_db()
+    try:
+        
+        cursor = conn.cursor()
+        cursor.execute("SELECT O FROM tunes1;")
+        rows = cursor.fetchall()
+        df = pd.DataFrame(rows, columns=["O"])
+
+        origin_counts = df["O"].value_counts().head(10)
+        
+        print(origin_counts)
+
+        plt.figure(figsize=(10, 6))
+        origin_counts.sort_values().plot(kind='barh', color='lightblue', edgecolor='black')
+
+        plt.title("Top 10 Country Origins", fontsize=14, fontweight='bold')
+        plt.xlabel("Number of Tunes", fontsize=12)
+        plt.ylabel("Origin", fontsize=12)
+        plt.grid(axis='x', linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.savefig("grid1.png")
+        plt.show()
+        
+    finally:
+        conn.close()
 
 
 do_databasse_stuff()
@@ -216,5 +247,6 @@ for item in os.listdir(books_dir):
 
 
 
-get_tunes_by_book()
+get_tunes_by_title()
+graph_top10_origins()
 
