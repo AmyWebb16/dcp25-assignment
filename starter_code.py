@@ -96,6 +96,7 @@ def process_file(file,book_number):
         insert_data(book_number, tune)
         pass
 
+#create a ui for search bar functions later on
 def create_UI():
     root = tk.Tk()
     root.geometry("400x300")
@@ -125,8 +126,8 @@ def create_UI():
 
     return root, search_frame, tree
 
-
-def get_tunes_by_title():
+#search a tune by the title (partial)
+def search_tune_title():
     conn = connect_db()
     root, search_frame, tree =create_UI()
 
@@ -180,6 +181,7 @@ def get_all_books():
     df = pd.read_sql(query,conn)
     print(df.head())
 
+#search a tune by the book number
 def search_tune_book():
     conn = connect_db()
     root, search_frame, tree = create_UI()
@@ -227,14 +229,15 @@ def search_tune_book():
 
     pass
 
-def get_tunes_by_type():
+def piechart_tune_type():
     conn = connect_db()
     query2 = "SELECT * from tunes1 where R = ; "
     df = pd.read_sql(query2,conn,)
     print(df)
     pass
 
-def graph_top10_origins():
+#creates a bar chart of the top 10 origins anf the count of tunes for each
+def barchart_top10_origins():
     conn = connect_db()
     try:
         
@@ -243,8 +246,8 @@ def graph_top10_origins():
         rows = cursor.fetchall()
         df = pd.DataFrame(rows, columns=["O"])
 
-        origin_counts = df["O"].value_counts().head(10)
-        
+        origin_counts = df["O"].value_counts().head(11)
+        origin_counts=origin_counts.iloc[1:11]
         print(origin_counts)
 
         plt.figure(figsize=(10, 6))
@@ -260,6 +263,86 @@ def graph_top10_origins():
         
     finally:
         conn.close()
+
+def create_menu():
+    menu_window = tk.Tk()
+    menu_window.title("Tunes Database")
+    menu_window.geometry("500x500")
+    menu_window.configure(bg='#ffffff')
+
+    title_label = tk.Label(
+        menu_window,
+        text="Tunes Database",
+        bg='#ffffff',
+        fg='#000000'
+    )
+    title_label.pack(pady=20)
+
+    button_frame = tk.Frame(menu_window, bg='#ffffff')
+    button_frame.pack(pady=10)
+
+    button_style = {
+        'width':30,
+        'height':2,
+        'font': ("Arial", 10),
+        'bg': "#8aedff",
+        'fg': '#ffffff',
+        'bd': 3
+    }
+    btn_all_tunes= tk.Button(
+        button_frame,
+        text="Show all Tunes",
+        command=get_all_books,
+        **button_style
+    )
+    btn_all_tunes.pack(pady=5)
+
+
+    btn_search_title =tk.Button(
+        button_frame,
+        text="Search Tunes by Title",
+        command= search_tune_title,
+        **button_style
+    )
+    btn_search_title.pack(pady=5)
+
+    btn_search_book=tk.Button(
+        button_frame,
+        text="Search Tunes by book number",
+        command=search_tune_book,
+        **button_style
+    )
+    btn_search_book.pack(pady=5)
+
+    btn_barchart = tk.Button(
+        button_frame,
+        text="Top 10 Origins Chart",
+        command=barchart_top10_origins,
+        **button_style
+    )
+    btn_barchart.pack(pady=5)
+
+    btn_piechart=tk.Button(
+        button_frame,
+        text="Piechart of types of Tune",
+        command=piechart_tune_type,
+        **button_style
+    )
+    btn_piechart.pack(pady=5)
+
+    btn_exit= tk.Button(
+        button_frame,
+        text="Exit",
+        command=menu_window.quit,
+        width=30,
+        height=5,
+        font=("Arial",10),
+        bg="#8aedff",
+        fg='white',
+        bd=3
+    )
+    btn_exit.pack(pady=15)
+    menu_window.mainloop()
 
 
 do_databasse_stuff()
@@ -286,8 +369,9 @@ for item in os.listdir(books_dir):
 
 
 
-#get_tunes_by_title()
-#graph_top10_origins()
-#get_tune_by_type()
-search_tune_book()
+#search_tune_title()
+#barchart_top10_origins()
+#search_tune_book()
+#piechart_tune_type() NEED TO DO
+create_menu()
 
