@@ -231,9 +231,17 @@ def search_tune_book():
 
 def piechart_tune_type():
     conn = connect_db()
-    query2 = "SELECT * from tunes1 where R = ; "
+    query2 = "SELECT R from tunes1;"
     df = pd.read_sql(query2,conn,)
-    print(df)
+    
+    type_counts = df['R'].value_counts().head(15)
+
+    plt.figure(figsize=(10,6))
+    plt.pie(type_counts.values, labels=type_counts.index, autopct='%1.2f%%')
+    plt.title('Pie Chart of Top 15 Tune Types')
+    plt.show()
+
+    conn.close()
     pass
 
 #creates a bar chart of the top 10 origins anf the count of tunes for each
@@ -286,7 +294,7 @@ def create_menu():
         'height':2,
         'font': ("Arial", 10),
         'bg': "#8aedff",
-        'fg': '#ffffff',
+        'fg': "#000000",
         'bd': 3
     }
     btn_all_tunes= tk.Button(
@@ -324,7 +332,7 @@ def create_menu():
 
     btn_piechart=tk.Button(
         button_frame,
-        text="Piechart of types of Tune",
+        text="Piechart of 15 top types of Tune",
         command=piechart_tune_type,
         **button_style
     )
@@ -337,8 +345,8 @@ def create_menu():
         width=30,
         height=5,
         font=("Arial",10),
-        bg="#8aedff",
-        fg='white',
+        bg="#67e2f8",
+        fg='black',
         bd=3
     )
     btn_exit.pack(pady=15)
