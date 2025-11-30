@@ -176,10 +176,61 @@ def search_tune_title():
 
 def get_all_books():
     conn = connect_db()
+    root, search_frame, tree = create_UI()
 
-    query = "SELECT * from  tunes1"
-    df = pd.read_sql(query,conn)
-    print(df.head())
+    root.title("All Tunes")
+    root.geometry("400x300")
+
+    search_frame.pack_forget()
+
+    title_label = tk.Label(
+        root,
+        text="All Tunes from Table"
+    )
+    title_label.pack(side="top",pady=10)
+
+    info_frame = tk.Frame(root)
+    info_frame.pack(side="top",pady=5)
+    
+
+    record_label = tk.Label(
+        info_frame,
+        text="loading"
+    )
+    record_label.pack()
+
+    try:
+        query = "SELECT * from  tunes1"
+        df = pd.read_sql(query,conn)
+
+        for idx, row in df.iterrows():
+            tree.insert("", tk.END, values=list(row))
+            record_label.config(text=f"Total records {len(df)}")
+
+    except Exception as e:
+        messagebox.showerror("Error")
+        record_label.config(text="error")
+
+    btn_close = tk.Button(
+        root,
+        text="Close",
+        command=lambda:[conn.close(), root.destroy()],
+        width=20,
+        height=5,
+        bg="#38A5FF",
+        fg="#000000",
+        bd=5
+    )
+    btn_close.pack(pady=10)
+
+    def on_closing():
+        conn.close()
+        root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.mainloop()
+
+    
 
 #search a tune by the book number
 def search_tune_book():
@@ -258,8 +309,10 @@ def barchart_top10_origins():
         origin_counts=origin_counts.iloc[1:11]
         print(origin_counts)
 
+        colours=["#FF0000","#FE5D00", "#FFFF00","#0CF200","#2C8503","#00BBFF","#001AFF","#B700FF","#FF00EE","#F96AC0"]
+
         plt.figure(figsize=(10, 6))
-        origin_counts.sort_values().plot(kind='barh', color='lightblue', edgecolor='black')
+        origin_counts.sort_values().plot(kind='barh', color=colours, edgecolor='black')
 
         plt.title("Top 10 Country Origins", fontsize=14, fontweight='bold')
         plt.xlabel("Number of Tunes", fontsize=12)
