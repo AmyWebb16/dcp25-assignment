@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
+import re 
 
 # connect to mysql server
 def connect_db():
@@ -70,9 +71,72 @@ def insert_data(book_number, tune):
     cursor.close()
     conn.close()
 
+abc_encoding_LOOKUP ={
+    #grave
+    '\\`A': 'À', '\\`a': 'à', '\\`E': 'È', '\\`e': 'è', 
+    '\\`I': 'Ì', '\\`i': 'ì', '\\`O': 'Ò', '\\`o': 'ò',
+    '\\`U': 'Ù', '\\`u': 'ù',
+
+    #acute
+    "\\'A": 'Á', "\\'a": 'á', "\\'E": 'É', "\\'e": 'é',
+    "\\'I": 'Í', "\\'i": 'í', "\\'O": 'Ó', "\\'o": 'ó',
+    "\\'U": 'Ú', "\\'u": 'ú', "\\'Y": 'Ý', "\\'y": 'ý',
+
+    #circumflex
+    '\\^A': 'Â', '\\^a': 'â', '\\^E': 'Ê', '\\^e': 'ê',
+    '\\^I': 'Î', '\\^i': 'î', '\\^O': 'Ô', '\\^o': 'ô',
+    '\\^U': 'Û', '\\^u': 'û',
+
+    #tilde
+    '\\~A': 'Ã', '\\~a': 'ã', '\\~N': 'Ñ', '\\~n': 'ñ',
+    '\\~O': 'Õ', '\\~o': 'õ',
+
+    #umlauts
+    '\\"A': 'Ä', '\\"a': 'ä', '\\"E': 'Ë', '\\"e': 'ë',
+    '\\"I': 'Ï', '\\"i': 'ï', '\\"O': 'Ö', '\\"o': 'ö',
+    '\\"U': 'Ü', '\\"u': 'ü', '\\"Y': 'Ÿ', '\\"y': 'ÿ',
+
+    #cedilla
+    '\\cC': 'Ç', '\\cc': 'ç',
+
+    #ring
+    '\\AA': 'Å', '\\aa': 'å',
+
+    #slash
+    '\\/O': 'Ø', '\\/o': 'ø',
+
+    #breve
+    '\\uA': 'Ă', '\\ua': 'ă', '\\uE': 'Ĕ', '\\ue': 'ĕ',
+
+    #caron
+    '\\vS': 'Š', '\\vs': 'š', '\\vZ': 'Ž', '\\vz': 'ž',
+    '\\vC': 'Č', '\\vc': 'č',
+
+    #double acute
+    '\\HO': 'Ő', '\\Ho': 'ő', '\\HU': 'Ű', '\\Hu': 'ű',
+
+    #ligatures
+    '\\ss': 'ß', '\\AE': 'Æ', '\\ae': 'æ', '\\oe': 'œ', '\\OE': 'Œ',
+}
+def decode(text):
+    """Decode ABC notation special character to Unicode using LOOKUP table"""
+    if not text:
+        return text
+    
+    decoded_text=text
+
+    sorted_keys =sorted(abc_encoding_LOOKUP.keys(), key=len, reverse=True)
+
+    for encoding in sorted_keys:
+        if encoding in decoded_text:
+            decoded_text=decoded_text.replace(encoding,abc_encoding_LOOKUP[encoding])
+
+    return decoded_text
 
 def process_file(file,book_number):
-    with open(file, 'r') as f:
+    """Modifeied to decode abc encodings using LOOKUP table"""
+
+    with open(file, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     # list comprehension to strip the \n's
     lines = [line.strip() for line in lines]
@@ -88,7 +152,8 @@ def process_file(file,book_number):
                 current_tune ={}
         if ":" in line:
             key, value = line.split(":",1)
-            current_tune[key.strip()] = value.strip()
+            decoded_value= decode(value.strip())
+            current_tune[key.strip()] = decoded_value
     if current_tune:
         tunes.append(current_tune)
     
