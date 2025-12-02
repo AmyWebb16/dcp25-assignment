@@ -405,7 +405,7 @@ def piechart_tune_type():
 
     #displays counts in a pie chart to 2 decimal place. Saves the chart as a .png
     plt.figure(figsize=(10,6))
-    plt.pie(type_counts.values, labels=type_counts.index, autopct='%1.2f%%')
+    plt.pie(type_counts.values, labels=type_counts.index, autopct='%1.1f%%', startangle=45, pctdistance=0.9)
     plt.title('Pie Chart of Top 15 Tune Types')
     plt.savefig("piechart.png")
     plt.show()
