@@ -29,7 +29,7 @@ def do_databasse_stuff():
     conn = connect_db()
     cursor = conn.cursor()
 
-    # Create table
+    # Create table 
     cursor.execute("DROP TABLE IF EXISTS tunes1")
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS tunes1 (
@@ -71,6 +71,7 @@ def insert_data(book_number, tune):
     cursor.close()
     conn.close()
 
+#lookup table to change encoding
 abc_encoding_LOOKUP ={
     #grave
     '\\`A': 'À', '\\`a': 'à', '\\`E': 'È', '\\`e': 'è', 
@@ -118,11 +119,12 @@ abc_encoding_LOOKUP ={
     #ligatures
     '\\ss': 'ß', '\\AE': 'Æ', '\\ae': 'æ', '\\oe': 'œ', '\\OE': 'Œ',
 }
+
+#function to go over tunes and fix encoding
 def decode(text):
     """Decode ABC notation special character to Unicode using LOOKUP table"""
     if not text:
         return text
-    
     decoded_text=text
 
     sorted_keys =sorted(abc_encoding_LOOKUP.keys(), key=len, reverse=True)
@@ -133,6 +135,7 @@ def decode(text):
 
     return decoded_text
 
+#process the file / clean it up
 def process_file(file,book_number):
     """Modifeied to decode abc encodings using LOOKUP table"""
 
@@ -163,6 +166,7 @@ def process_file(file,book_number):
 
 #create a ui for search bar functions later on
 def create_UI():
+    #create window dimesions
     root = tk.Tk()
     root.geometry("400x300")
     root.title("Treeview Table")
@@ -173,6 +177,7 @@ def create_UI():
     table_frame = tk.Frame(root)
     table_frame.pack(fill="both", expand=True)
 
+    #have column names
     columns = ('book_number', 'X', 'T', 'R','O', 'M', 'L', 'Q', 'K')
     tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=8)
 
@@ -180,11 +185,15 @@ def create_UI():
         tree.heading(col, text=col)
         tree.column(col, width=100)
 
+    #both veritical and jorizontal scroll bars
     scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=tree.yview)
+    scrollbar2 = ttk.Scrollbar(table_frame, orient=tk.HORIZONTAL, command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar2.set)
     tree.configure(yscrollcommand=scrollbar.set)
 
     tree.grid(row=0, column=0, sticky="nsew")
     scrollbar.grid(row=0, column=1, sticky="ns")
+    scrollbar2.grid(row=0, column=1, sticky="ns")
 
     table_frame.grid_rowconfigure(0, weight=1)
     table_frame.grid_columnconfigure(0, weight=1)
@@ -196,6 +205,7 @@ def search_tune_title():
     conn = connect_db()
     root, search_frame, tree =create_UI()
 
+    #create a title for window
     label = tk.Label(search_frame, text="Search by Title:")
     label.pack(side="left", padx=5)
 
@@ -204,14 +214,17 @@ def search_tune_title():
     
 
     def on_click():
+        #gets the search query
         tree.delete(*tree.get_children())
 
+        #removes blanks from query and checks its not empty
         search = entry.get().strip()
         if not search:
             tk.messagebox.showwarning("Input Required", "Please enter a title")
             return
         
         try:
+            #sql query to get seach title and makes it a partial search
             query1 = "SELECT * from tunes1 where T Like %s;"
             df = pd.read_sql(query1,conn,params=[f"%{search}%"])
 
@@ -219,16 +232,31 @@ def search_tune_title():
                 tk.messagebox.showinfo("No Results", f"No records found for '{search}'")
                 return
         
+            #goes through rows to find match
             for idx, row in df.iterrows():
                 tree.insert("",tk.END,values=list(row))
 
         except Exception as e:
             tk.messagebox.showerror("Error", f"Database error: {str(e)}")
         
-
+    #button to confirm search 
     button = tk.Button(root,text="Click Me", command=on_click)
     button.pack(side="left",padx=5)
     entry.bind('<Return>',lambda e: on_click())
+
+    #exit button
+    btn_close = tk.Button(
+        root,
+        text="Close",
+        command=lambda:[conn.close(), root.destroy()],
+        width=20,
+        height=5,
+        bg="#38A5FF",
+        fg="#000000",
+        bd=5
+    )
+    btn_close.pack(pady=10)
+
     def on_closing():
         conn.close()
         root.destroy()
@@ -238,11 +266,12 @@ def search_tune_title():
 
     pass
 
-
+#gets all the tunes in table and put them into a table
 def get_all_books():
     conn = connect_db()
     root, search_frame, tree = create_UI()
 
+    #sets title and window size
     root.title("All Tunes")
     root.geometry("400x300")
 
@@ -265,9 +294,11 @@ def get_all_books():
     record_label.pack()
 
     try:
+        #sql query
         query = "SELECT * from  tunes1"
         df = pd.read_sql(query,conn)
 
+        #goes through rows to find match
         for idx, row in df.iterrows():
             tree.insert("", tk.END, values=list(row))
             record_label.config(text=f"Total records {len(df)}")
@@ -276,6 +307,7 @@ def get_all_books():
         messagebox.showerror("Error")
         record_label.config(text="error")
 
+    #exit button design
     btn_close = tk.Button(
         root,
         text="Close",
@@ -302,6 +334,7 @@ def search_tune_book():
     conn = connect_db()
     root, search_frame, tree = create_UI()
 
+    #title for window
     label = tk.Label(search_frame, text="Search by Book Number:")
     label.pack(side="left", padx=5)
 
@@ -309,6 +342,7 @@ def search_tune_book():
     entry.pack(side="left", padx=5)
 
     def on_click():
+        #get search and removes blanks/ checks if not empty
         tree.delete(*tree.get_children())  
         search = entry.get().strip()
 
@@ -325,15 +359,30 @@ def search_tune_book():
                 messagebox.showinfo("No Results", f"No records found for '{search}'")
                 return
 
+            #find rows that match
             for _, row in df.iterrows():
                 tree.insert("", tk.END, values=list(row))
 
         except Exception as e:
             messagebox.showerror("Error", f"Database error: {str(e)}")
 
+    #call the command once the button is clicked
     button = tk.Button(search_frame, text="Search", command=on_click)
     button.pack(side="left", padx=5)
     entry.bind('<Return>', lambda e: on_click())
+
+    #exit button
+    btn_close = tk.Button(
+        root,
+        text="Close",
+        command=lambda:[conn.close(), root.destroy()],
+        width=20,
+        height=5,
+        bg="#38A5FF",
+        fg="#000000",
+        bd=5
+    )
+    btn_close.pack(pady=10)
 
     def on_closing():
         conn.close()
@@ -347,14 +396,18 @@ def search_tune_book():
 
 def piechart_tune_type():
     conn = connect_db()
+    #sql query and but data into data frame
     query2 = "SELECT R from tunes1;"
     df = pd.read_sql(query2,conn,)
     
+    #counts the occurence of types and gets top 15
     type_counts = df['R'].value_counts().head(15)
 
+    #displays counts in a pie chart to 2 decimal place. Saves the chart as a .png
     plt.figure(figsize=(10,6))
     plt.pie(type_counts.values, labels=type_counts.index, autopct='%1.2f%%')
     plt.title('Pie Chart of Top 15 Tune Types')
+    plt.savefig("piechart.png")
     plt.show()
 
     conn.close()
@@ -363,19 +416,24 @@ def piechart_tune_type():
 #creates a bar chart of the top 10 origins anf the count of tunes for each
 def barchart_top10_origins():
     conn = connect_db()
+   
     try:
-        
+        #gets all the orgins and put them into a dataframe
         cursor = conn.cursor()
         cursor.execute("SELECT O FROM tunes1;")
         rows = cursor.fetchall()
         df = pd.DataFrame(rows, columns=["O"])
 
+        #gets the origins count and gets top 11
         origin_counts = df["O"].value_counts().head(11)
+        #filters the first element as the origin is unknown
         origin_counts=origin_counts.iloc[1:11]
         print(origin_counts)
 
+        #sets colours for chart
         colours=["#FF0000","#FE5D00", "#FFFF00","#0CF200","#2C8503","#00BBFF","#001AFF","#B700FF","#FF00EE","#F96AC0"]
 
+        #create the horizontal bar chart that has different colours for each column
         plt.figure(figsize=(10, 6))
         origin_counts.sort_values().plot(kind='barh', color=colours, edgecolor='black')
 
@@ -384,18 +442,20 @@ def barchart_top10_origins():
         plt.ylabel("Origin", fontsize=12)
         plt.grid(axis='x', linestyle='--', alpha=0.5)
         plt.tight_layout()
-        plt.savefig("grid1.png")
+        plt.savefig("barchart.png")
         plt.show()
         
     finally:
         conn.close()
 
 def create_menu():
+    #creates menu window
     menu_window = tk.Tk()
     menu_window.title("Tunes Database")
     menu_window.geometry("500x500")
     menu_window.configure(bg='#ffffff')
 
+    #display a title for the menu
     title_label = tk.Label(
         menu_window,
         text="Tunes Database",
@@ -407,6 +467,7 @@ def create_menu():
     button_frame = tk.Frame(menu_window, bg='#ffffff')
     button_frame.pack(pady=10)
 
+    #general design for buttons
     button_style = {
         'width':30,
         'height':2,
@@ -415,6 +476,8 @@ def create_menu():
         'fg': "#000000",
         'bd': 3
     }
+
+    #design for all tunes button
     btn_all_tunes= tk.Button(
         button_frame,
         text="Show all Tunes",
@@ -424,6 +487,7 @@ def create_menu():
     btn_all_tunes.pack(pady=5)
 
 
+    #design fro search title button
     btn_search_title =tk.Button(
         button_frame,
         text="Search Tunes by Title",
@@ -432,6 +496,7 @@ def create_menu():
     )
     btn_search_title.pack(pady=5)
 
+    #design for search book buttton
     btn_search_book=tk.Button(
         button_frame,
         text="Search Tunes by book number",
@@ -440,6 +505,7 @@ def create_menu():
     )
     btn_search_book.pack(pady=5)
 
+    #design for bar chart button
     btn_barchart = tk.Button(
         button_frame,
         text="Top 10 Origins Chart",
@@ -447,7 +513,8 @@ def create_menu():
         **button_style
     )
     btn_barchart.pack(pady=5)
-
+    
+    #design for pie chart button
     btn_piechart=tk.Button(
         button_frame,
         text="Piechart of 15 top types of Tune",
@@ -456,6 +523,7 @@ def create_menu():
     )
     btn_piechart.pack(pady=5)
 
+    #design for exit button
     btn_exit= tk.Button(
         button_frame,
         text="Exit",
@@ -494,10 +562,5 @@ for item in os.listdir(books_dir):
                 process_file(file_path, book_number)
 
 
-
-#search_tune_title()
-#barchart_top10_origins()
-#search_tune_book()
-#piechart_tune_type() NEED TO DO
 create_menu()
 
